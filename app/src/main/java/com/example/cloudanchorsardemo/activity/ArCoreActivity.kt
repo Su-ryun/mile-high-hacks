@@ -26,6 +26,7 @@ import com.google.ar.sceneform.rendering.Renderable
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.TransformableNode
+import com.google.firebase.database.DataSnapshot
 import kotlinx.android.synthetic.main.activity_arcore.*
 import java.util.concurrent.CompletableFuture
 
@@ -102,7 +103,10 @@ class ArCoreActivity : AppCompatActivity() {
                     siteCreationDate =
                         viewGenerator.findViewById<EditText>(R.id.site_creation_date)
                             .text.toString();
-                    renderObject(hitResult);
+                    renderObject(hitResult, true);
+                })
+                .setNegativeButton("Cancel", DialogInterface.OnClickListener {dialog, which ->
+                    Log.i("dhl", "Negative button clicked.");
                 })
                 .create()
                 .show();
@@ -116,14 +120,14 @@ class ArCoreActivity : AppCompatActivity() {
 
         firebaseDatabaseManager?.getCloudAnchorID(siteName, object :
             FirebaseDatabaseManager.CloudAnchorIdListener {
-            override fun onCloudAnchorIdAvailable(cloudAnchorId: String?) {
+            override fun onCloudAnchorIdAvailable(snapshot: DataSnapshot?) {
 
                 val resolvedAnchor = arCoreFragment?.arSceneView?.session?.
-                    resolveCloudAnchor(cloudAnchorId)
+                    resolveCloudAnchor(snapshot?.child("id")?.value.toString())
                 setCloudAnchor(resolvedAnchor)
                 showMessage("Now Resolving Anchor...")
 
-                arCoreFragment?.let { placeObject(it, cloudAnchor) }
+                arCoreFragment?.let { placeObject(it, cloudAnchor, false, snapshot) }
                 appAnchorState = AppAnchorState.RESOLVING
             }
 
@@ -207,24 +211,47 @@ class ArCoreActivity : AppCompatActivity() {
         ).show()
     }
 
-    private fun placeObject(fragment: ArFragment, anchor: Anchor?) {
-        var view: View?;
-        view = layoutInflater.inflate(R.layout.location_layout, null);
-        view.findViewById<TextView>(R.id.location_name).setText(siteName);
-        view.findViewById<TextView>(R.id.location_description).setText(siteDescription);
-        view.findViewById<TextView>(R.id.location_creation_date).setText(siteCreationDate);
-        ViewRenderable.builder()
-            .setView(fragment.context, view)
-            .build()
-            .thenAccept { renderable -> addNodeToScene(fragment, anchor, renderable) }
-            .exceptionally { throwable ->
-                val builder = android.app.AlertDialog.Builder(this)
-                builder.setMessage(throwable.message)
-                    .setTitle("Error!")
-                val dialog = builder.create()
-                dialog.show()
-                null
-            }
+    private fun placeObject(fragment: ArFragment, anchor: Anchor?, creating: Boolean, snapshot: DataSnapshot?) {
+        if(creating) {
+            var view: View?;
+            view = layoutInflater.inflate(R.layout.location_layout, null);
+            view.findViewById<TextView>(R.id.location_name).setText(siteName);
+            view.findViewById<TextView>(R.id.location_description).setText(siteDescription);
+            view.findViewById<TextView>(R.id.location_creation_date).setText(siteCreationDate);
+            ViewRenderable.builder()
+                .setView(fragment.context, view)
+                .build()
+                .thenAccept { renderable -> addNodeToScene(fragment, anchor, renderable) }
+                .exceptionally { throwable ->
+                    val builder = android.app.AlertDialog.Builder(this)
+                    builder.setMessage(throwable.message)
+                        .setTitle("Error!")
+                    val dialog = builder.create()
+                    dialog.show()
+                    null
+                }
+        } else {
+            var view: View?;
+            view = layoutInflater.inflate(R.layout.location_layout, null);
+            view.findViewById<TextView>(R.id.location_name)
+                .setText(snapshot?.key.toString());
+            view.findViewById<TextView>(R.id.location_description)
+                .setText(snapshot?.child("siteDesctiption")?.value.toString());
+            view.findViewById<TextView>(R.id.location_creation_date).
+                setText(snapshot?.child("siteCreationDate")?.value.toString());
+            ViewRenderable.builder()
+                .setView(fragment.context, view)
+                .build()
+                .thenAccept { renderable -> addNodeToScene(fragment, anchor, renderable) }
+                .exceptionally { throwable ->
+                    val builder = android.app.AlertDialog.Builder(this)
+                    builder.setMessage(throwable.message)
+                        .setTitle("Error!")
+                    val dialog = builder.create()
+                    dialog.show()
+                    null
+                }
+        }
     }
 
     private fun addNodeToScene(fragment: ArFragment, anchor: Anchor?, renderable: Renderable) {
@@ -236,17 +263,16 @@ class ArCoreActivity : AppCompatActivity() {
         node.select()
     }
 
-    private fun renderObject(hitResult: HitResult) {
-        var userInputView = layoutInflater.inflate(R.layout.user_input, null) as EditText;
+    private fun renderObject(hitResult: HitResult, creating: Boolean) {
+        var userInputView = layoutInflater.inflate(R.layout.user_input, null) as TextView;
         AlertDialog.Builder(this)
             .setView(userInputView)
             .setPositiveButton("Add", DialogInterface.OnClickListener { dialog, which ->
-                manualShortCode = userInputView.text.toString();
                 val newAnchor = arCoreFragment?.arSceneView?.session?.hostCloudAnchor(hitResult.createAnchor())
                 setCloudAnchor(newAnchor)
                 appAnchorState = AppAnchorState.HOSTING
                 Toast.makeText(this, "Now hosting anchor...", Toast.LENGTH_LONG).show()
-                arCoreFragment?.let { placeObject(it, cloudAnchor) }
+                arCoreFragment?.let { placeObject(it, cloudAnchor, creating, null) }
             })
             .setNegativeButton("Cancel", null)
             .create()

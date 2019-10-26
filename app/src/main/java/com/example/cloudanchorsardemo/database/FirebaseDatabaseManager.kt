@@ -17,7 +17,7 @@ internal class FirebaseDatabaseManager(context: Context) {
 
     /** Listener for a new Cloud Anchor ID from the Firebase Database.  */
     internal interface CloudAnchorIdListener {
-        fun onCloudAnchorIdAvailable(cloudAnchorId: String?)
+        fun onCloudAnchorIdAvailable(dataSnapshot: DataSnapshot?)
     }
 
     /** Listener for a new short code from the Firebase Database.  */
@@ -84,7 +84,7 @@ internal class FirebaseDatabaseManager(context: Context) {
                 object : ValueEventListener {
                     override fun onDataChange(dataSnapshot: DataSnapshot) {
                         Log.i("dhl", "\n\n\ndataSnapshot at: " + dataSnapshot.child("siteCreationDate").value.toString());
-                        listener.onCloudAnchorIdAvailable(dataSnapshot.child("id").value.toString())
+                        listener.onCloudAnchorIdAvailable(dataSnapshot)
                     }
 
                     override fun onCancelled(error: DatabaseError) {
@@ -102,7 +102,6 @@ internal class FirebaseDatabaseManager(context: Context) {
         private val TAG = FirebaseDatabaseManager::class.java.name
         private val KEY_ROOT_DIR = "shared_anchor_codelab_root"
         private val KEY_NEXT_SHORT_CODE = "next_short_code"
-        private val KEY_PREFIX = "anchor;"
         private val INITIAL_SHORT_CODE = 142
     }
 }
