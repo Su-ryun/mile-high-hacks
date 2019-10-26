@@ -62,21 +62,29 @@ internal class FirebaseDatabaseManager(context: Context) {
     }
 
     /** Stores the cloud anchor ID in the configured Firebase Database.  */
-    fun storeUsingShortCode(shortCode: String, cloudAnchorId: String) {
-        rootRef.child(KEY_PREFIX + shortCode).setValue(cloudAnchorId)
+    fun storeUsingShortCode(cloudAnchorId: String,
+                            siteName: String,
+                            siteDescription: String,
+                            siteCreationDate: String) {
+        var newRef = rootRef.child(siteName);
+        newRef.child(siteName).setValue(siteName);
+        newRef.child("siteDescription").setValue(siteDescription);
+        newRef.child("siteCreationDate").setValue(siteCreationDate);
+        newRef.child("id").setValue(cloudAnchorId);
     }
 
     /**
      * Retrieves the cloud anchor ID using a short code. Returns an empty string if a cloud anchor ID
      * was not stored for this short code.
      */
-    fun getCloudAnchorID(shortCode: String, listener: CloudAnchorIdListener) {
+    fun getCloudAnchorID(siteName: String, listener: CloudAnchorIdListener) {
         rootRef
-            .child(KEY_PREFIX + shortCode)
+            .child(siteName)
             .addListenerForSingleValueEvent(
                 object : ValueEventListener {
                     override fun onDataChange(dataSnapshot: DataSnapshot) {
-                        listener.onCloudAnchorIdAvailable(dataSnapshot.value.toString())
+                        Log.i("dhl", "\n\n\ndataSnapshot at: " + dataSnapshot.child("siteCreationDate").value.toString());
+                        listener.onCloudAnchorIdAvailable(dataSnapshot.child("id").value.toString())
                     }
 
                     override fun onCancelled(error: DatabaseError) {

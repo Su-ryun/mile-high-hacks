@@ -69,7 +69,7 @@ class ArCoreActivity : AppCompatActivity() {
 
     private fun initListeners() {
         clear_button.setOnClickListener {
-            setCloudAnchor(null, "void")
+            setCloudAnchor(null)
         }
 
         resolve_button.setOnClickListener(View.OnClickListener {
@@ -112,14 +112,15 @@ class ArCoreActivity : AppCompatActivity() {
 
     fun resolveAnchor(dialogValue: String) {
 
-        val shortCode = dialogValue
+        val siteName = dialogValue
 
-        firebaseDatabaseManager?.getCloudAnchorID(shortCode, object :
+        firebaseDatabaseManager?.getCloudAnchorID(siteName, object :
             FirebaseDatabaseManager.CloudAnchorIdListener {
             override fun onCloudAnchorIdAvailable(cloudAnchorId: String?) {
 
-                val resolvedAnchor = arCoreFragment?.arSceneView?.session?.resolveCloudAnchor(cloudAnchorId)
-                setCloudAnchor(resolvedAnchor, shortCode)
+                val resolvedAnchor = arCoreFragment?.arSceneView?.session?.
+                    resolveCloudAnchor(cloudAnchorId)
+                setCloudAnchor(resolvedAnchor)
                 showMessage("Now Resolving Anchor...")
 
                 arCoreFragment?.let { placeObject(it, cloudAnchor) }
@@ -134,7 +135,7 @@ class ArCoreActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    private fun setCloudAnchor(newAnchor: Anchor?, manualShortCode: String) {
+    private fun setCloudAnchor(newAnchor: Anchor?) {
         if (cloudAnchor != null) {
             cloudAnchor?.detach()
         }
@@ -165,11 +166,13 @@ class ArCoreActivity : AppCompatActivity() {
                             }
                             cloudAnchor?.let {
                                 firebaseDatabaseManager?.storeUsingShortCode(
-                                    manualShortCode,
-                                    it.cloudAnchorId
+                                    it.cloudAnchorId,
+                                    siteName,
+                                    siteDescription,
+                                    siteCreationDate
                                 )
                             }
-                            showMessageWitAnchorId("Anchor hosted with: " + manualShortCode)
+                            showMessageWitAnchorId("Anchor hosted with site name: " + siteName)
                         }
 
                     })
@@ -240,7 +243,7 @@ class ArCoreActivity : AppCompatActivity() {
             .setPositiveButton("Add", DialogInterface.OnClickListener { dialog, which ->
                 manualShortCode = userInputView.text.toString();
                 val newAnchor = arCoreFragment?.arSceneView?.session?.hostCloudAnchor(hitResult.createAnchor())
-                setCloudAnchor(newAnchor, manualShortCode)
+                setCloudAnchor(newAnchor)
                 appAnchorState = AppAnchorState.HOSTING
                 Toast.makeText(this, "Now hosting anchor...", Toast.LENGTH_LONG).show()
                 arCoreFragment?.let { placeObject(it, cloudAnchor) }
