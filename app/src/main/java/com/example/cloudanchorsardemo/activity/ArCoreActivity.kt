@@ -34,13 +34,15 @@ class ArCoreActivity : AppCompatActivity() {
 
     // Declare a CloudAnchor and an AppAnchorState
     private var cloudAnchor: Anchor? = null
-    private var bottleCloudAnchor: Anchor? = null
-    private var textureCloudAnchor: Anchor? = null
     private var appAnchorState = AppAnchorState.NONE
 
     private var arCoreFragment: ArCoreFragment? = null
     private var firebaseDatabaseManager: FirebaseDatabaseManager? = null
     private var manualShortCode = 99;
+
+    private var siteName: String = "";
+    private var siteDescription: String = "";
+    private var siteCreationDate: String = "";
 
     private enum class AppAnchorState {
         NONE,
@@ -91,7 +93,15 @@ class ArCoreActivity : AppCompatActivity() {
                 .setView(viewGenerator)
                 .setPositiveButton("Create", DialogInterface.OnClickListener {dialog, which ->
                     Log.i("dhl", "\n\n\nARFragment was tapped.");
-                    var siteName = viewGenerator.
+                    siteName =
+                    viewGenerator.findViewById<EditText>(R.id.site_name)
+                        .text.toString();
+                    siteDescription =
+                    viewGenerator.findViewById<EditText>(R.id.site_description)
+                        .text.toString();
+                    siteCreationDate =
+                        viewGenerator.findViewById<EditText>(R.id.site_creation_date)
+                            .text.toString();
                     renderObject(hitResult);
                 })
                 .create()
@@ -112,11 +122,7 @@ class ArCoreActivity : AppCompatActivity() {
                 setCloudAnchor(resolvedAnchor, shortCode)
                 showMessage("Now Resolving Anchor...")
 
-                if(shortCode == 1) {
-                    arCoreFragment?.let { placeObject(it, bottleCloudAnchor, shortCode) }
-                } else if (shortCode == 2) {
-                    arCoreFragment?.let { placeObject(it, textureCloudAnchor, shortCode) }
-                }
+                arCoreFragment?.let { placeObject(it, cloudAnchor) }
                 appAnchorState = AppAnchorState.RESOLVING
             }
 
@@ -131,14 +137,6 @@ class ArCoreActivity : AppCompatActivity() {
     private fun setCloudAnchor(newAnchor: Anchor?, manualShortCode: Int) {
         if (cloudAnchor != null) {
             cloudAnchor?.detach()
-        }
-
-        if (manualShortCode == 1) {
-//            bottleCloudAnchor?.detach()
-            bottleCloudAnchor = newAnchor
-        } else if (manualShortCode == 2) {
-//            textureCloudAnchor?.detach();
-            textureCloudAnchor = newAnchor;
         }
 
         cloudAnchor = newAnchor
@@ -206,15 +204,12 @@ class ArCoreActivity : AppCompatActivity() {
         ).show()
     }
 
-    private fun placeObject(fragment: ArFragment, anchor: Anchor?, stageNumber: Int) {
+    private fun placeObject(fragment: ArFragment, anchor: Anchor?) {
         var view: View?;
-        if(stageNumber == 1) {
-           view = layoutInflater.inflate(R.layout.bottle_station, null);
-        } else if (stageNumber == 2){
-           view = layoutInflater.inflate(R.layout.texture_wall, null);
-        } else {
-            view = layoutInflater.inflate(R.layout.bottle_station, null);
-        }
+        view = layoutInflater.inflate(R.layout.location_layout, null);
+        view.findViewById<TextView>(R.id.location_name).setText(siteName);
+        view.findViewById<TextView>(R.id.location_description).setText(siteDescription);
+        view.findViewById<TextView>(R.id.location_creation_date).setText(siteCreationDate);
         ViewRenderable.builder()
             .setView(fragment.context, view)
             .build()
@@ -248,11 +243,7 @@ class ArCoreActivity : AppCompatActivity() {
                 setCloudAnchor(newAnchor, manualShortCode)
                 appAnchorState = AppAnchorState.HOSTING
                 Toast.makeText(this, "Now hosting anchor...", Toast.LENGTH_LONG).show()
-                if(manualShortCode == 1) {
-                    arCoreFragment?.let { placeObject(it, bottleCloudAnchor, manualShortCode) }
-                } else if (manualShortCode == 2) {
-                    arCoreFragment?.let { placeObject(it, textureCloudAnchor, manualShortCode) }
-                }
+                arCoreFragment?.let { placeObject(it, cloudAnchor) }
             })
             .setNegativeButton("Cancel", null)
             .create()
