@@ -62,7 +62,7 @@ internal class FirebaseDatabaseManager(context: Context) {
     }
 
     /** Stores the cloud anchor ID in the configured Firebase Database.  */
-    fun storeUsingShortCode(shortCode: Int, cloudAnchorId: String) {
+    fun storeUsingShortCode(shortCode: String, cloudAnchorId: String) {
         rootRef.child(KEY_PREFIX + shortCode).setValue(cloudAnchorId)
     }
 
@@ -70,7 +70,7 @@ internal class FirebaseDatabaseManager(context: Context) {
      * Retrieves the cloud anchor ID using a short code. Returns an empty string if a cloud anchor ID
      * was not stored for this short code.
      */
-    fun getCloudAnchorID(shortCode: Int, listener: CloudAnchorIdListener) {
+    fun getCloudAnchorID(shortCode: String, listener: CloudAnchorIdListener) {
         rootRef
             .child(KEY_PREFIX + shortCode)
             .addListenerForSingleValueEvent(

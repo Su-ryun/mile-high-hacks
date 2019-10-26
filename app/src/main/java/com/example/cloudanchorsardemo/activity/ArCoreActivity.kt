@@ -38,7 +38,7 @@ class ArCoreActivity : AppCompatActivity() {
 
     private var arCoreFragment: ArCoreFragment? = null
     private var firebaseDatabaseManager: FirebaseDatabaseManager? = null
-    private var manualShortCode = 99;
+    private var manualShortCode: String = "";
 
     private var siteName: String = "";
     private var siteDescription: String = "";
@@ -69,7 +69,7 @@ class ArCoreActivity : AppCompatActivity() {
 
     private fun initListeners() {
         clear_button.setOnClickListener {
-            setCloudAnchor(null, 99)
+            setCloudAnchor(null, "void")
         }
 
         resolve_button.setOnClickListener(View.OnClickListener {
@@ -112,7 +112,7 @@ class ArCoreActivity : AppCompatActivity() {
 
     fun resolveAnchor(dialogValue: String) {
 
-        val shortCode = Integer.parseInt(dialogValue)
+        val shortCode = dialogValue
 
         firebaseDatabaseManager?.getCloudAnchorID(shortCode, object :
             FirebaseDatabaseManager.CloudAnchorIdListener {
@@ -134,7 +134,7 @@ class ArCoreActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    private fun setCloudAnchor(newAnchor: Anchor?, manualShortCode: Int) {
+    private fun setCloudAnchor(newAnchor: Anchor?, manualShortCode: String) {
         if (cloudAnchor != null) {
             cloudAnchor?.detach()
         }
@@ -238,7 +238,7 @@ class ArCoreActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setView(userInputView)
             .setPositiveButton("Add", DialogInterface.OnClickListener { dialog, which ->
-                manualShortCode = Integer.parseInt(userInputView.text.toString());
+                manualShortCode = userInputView.text.toString();
                 val newAnchor = arCoreFragment?.arSceneView?.session?.hostCloudAnchor(hitResult.createAnchor())
                 setCloudAnchor(newAnchor, manualShortCode)
                 appAnchorState = AppAnchorState.HOSTING
