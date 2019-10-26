@@ -236,7 +236,7 @@ class ArCoreActivity : AppCompatActivity() {
             view.findViewById<TextView>(R.id.location_name)
                 .setText(snapshot?.key.toString());
             view.findViewById<TextView>(R.id.location_description)
-                .setText(snapshot?.child("siteDesctiption")?.value.toString());
+                .setText(snapshot?.child("siteDescription")?.value.toString());
             view.findViewById<TextView>(R.id.location_creation_date).
                 setText(snapshot?.child("siteCreationDate")?.value.toString());
             ViewRenderable.builder()
@@ -264,7 +264,7 @@ class ArCoreActivity : AppCompatActivity() {
     }
 
     private fun renderObject(hitResult: HitResult, creating: Boolean) {
-        var userInputView = layoutInflater.inflate(R.layout.user_input, null) as TextView;
+        var userInputView = layoutInflater.inflate(R.layout.user_input, null) as LinearLayout;
         AlertDialog.Builder(this)
             .setView(userInputView)
             .setPositiveButton("Add", DialogInterface.OnClickListener { dialog, which ->
