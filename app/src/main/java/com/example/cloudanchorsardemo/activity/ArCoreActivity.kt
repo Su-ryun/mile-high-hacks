@@ -1,17 +1,19 @@
 package com.example.cloudanchorsardemo.activity
 
+import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.provider.MediaStore
+import android.support.v4.content.FileProvider
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.Html
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import com.example.cloudanchorsardemo.R
 import com.example.cloudanchorsardemo.database.FirebaseDatabaseManager
 import com.example.cloudanchorsardemo.dialog.ResolveDialog
@@ -27,7 +29,12 @@ import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.TransformableNode
 import com.google.firebase.database.DataSnapshot
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_arcore.*
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.CompletableFuture
 
 
@@ -39,7 +46,6 @@ class ArCoreActivity : AppCompatActivity() {
 
     private var arCoreFragment: ArCoreFragment? = null
     private var firebaseDatabaseManager: FirebaseDatabaseManager? = null
-    private var manualShortCode: String = "";
 
     private var siteName: String = "";
     private var siteDescription: String = "";

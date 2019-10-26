@@ -23,7 +23,10 @@ class MainActivity: AppCompatActivity() {
     }
 
     private fun onButtonClicked() {
-        val perms = arrayOf(Manifest.permission.CAMERA)
+        val perms = arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE);
         if (!EasyPermissions.hasPermissions(this, *perms)) {
             EasyPermissions.requestPermissions(
                 this,
