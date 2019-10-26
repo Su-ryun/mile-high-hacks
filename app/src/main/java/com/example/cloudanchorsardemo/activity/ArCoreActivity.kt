@@ -91,6 +91,7 @@ class ArCoreActivity : AppCompatActivity() {
                 .setView(viewGenerator)
                 .setPositiveButton("Create", DialogInterface.OnClickListener {dialog, which ->
                     Log.i("dhl", "\n\n\nARFragment was tapped.");
+                    var siteName = viewGenerator.
                     renderObject(hitResult);
                 })
                 .create()
